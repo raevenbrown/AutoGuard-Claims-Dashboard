@@ -3,8 +3,7 @@ A proof-of-concept analytics pipeline for automotive warranty, claims processing
 ### Project Architecture & Documentation
 The complete proof-of-concept documentation for this pipeline can be reviewed here:
 - **Author**: Raeven Brown
-- **Documentation**: [Automotive Warranty POC Walkthrough](https://docs.google.com/document/d/1d1dK_nrhLY_...) *(You can paste your Google Doc link here if desired, or keep it as a reference)*
-
+- **Documentation**: [Automotive Warranty POC Walkthrough](https://docs.google.com/document/d/1d1dK_nrhLY_xDbB-bTi1V9FKxpHJSYs3/edit?usp=sharing&ouid=113467168658017302682&rtpof=true&sd=true) 
 ---
 
 ### Phase 1: Database Design (SQL)
