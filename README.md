@@ -28,5 +28,13 @@ To remove static manual SQL inserts, I engineered an automated ETL (Extract, Tra
 
 ---
 
-### Phase 3: Dashboard Visualization & Insights
-*(Coming Soon)* - Integrating relational datasets with front-end analytical interfaces for live performance monitoring.
+### Phase 3: Dashboard Visualization & Insights (Streamlit Cloud)
+
+To deliver actionable intelligence to executives, I built a production-ready, interactive web application using Streamlit and deployed it to Streamlit Community Cloud. 
+
+#### Core Features & Engineering:
+- **Reactive State Management:** Integrated a dynamic sidebar filter system using `st.sidebar.multiselect()` that mutates the core data architecture based on real-time user input (`Approved`, `Pending`, `Denied`).
+- **Dynamic KPI Computation:** Engineered responsive KPI matrix tracking blocks utilizing `st.metric()` to display real-time variables for **Total Financial Exposure**, **Average Cost per Claim**, and **Volume of Claims Tracked**.
+- **Tabular Visualization:** Configured interactive data frames (`st.dataframe`) utilizing container width adjustments to ensure responsive mobile/desktop formatting for auditing row-level data logs.
+
+👉 **[View the Live Interactive Dashboard Here](https://autoguard-claims-dashboard-lyuc6v8avzfjjmt5kt4qn3.streamlit.app/)**
