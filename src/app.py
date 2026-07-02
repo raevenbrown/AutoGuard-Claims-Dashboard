@@ -27,14 +27,15 @@ reporting_data = {
     "repair_cost": [1200.00, 850.00, 3400.00, 500.00, 2100.00, 975.00, 4800.00],
     "claim_status": ["Approved", "Pending", "Approved", "Denied", "Pending", "Denied", "Approved"],
     "funnel_stage": ["Closed Authorized", "Engineering Audit", "Closed Authorized", "Denied Static", "Parts Valuation", "Denied Static", "Closed Authorized"],
+    "rental_vendor": ["Hertz", "Enterprise", "None", "None", "Hertz", "None", "Enterprise"],
     "suggested_csr_script": [
-        "Your electrical claim at Pep Boys was approved. Alternator parts covered. Midsize Sedan active for 10 days ($45/day).",
-        "Transmission review pending at Precision Auto. Torque converter on backlog. Fullsize SUV rental approved for 14 days ($50/day).",
+        "Your electrical claim at Pep Boys was approved. Alternator parts covered. Midsize Sedan active for 10 days with Hertz ($45/day).",
+        "Transmission review pending at Precision Auto. Torque converter on backlog. Fullsize SUV rental approved for 14 days with Enterprise ($50/day).",
         "Electrical claim authorized at Pep Boys. Wiring harness allocation cleared. No rental requested.",
         "Claim Denied: Routine maintenance for brake pads is excluded from this powertrain baseline coverage.",
-        "Transmission claim pending review at Precision Auto for clutch pack authorization. Compact Sedan active for 7 days ($45/day).",
+        "Transmission claim pending review at Precision Auto for clutch pack authorization. Compact Sedan active for 7 days with Hertz ($45/day).",
         "Claim Denied: Air filter swap is categorized as non-covered standard user preventative maintenance.",
-        "High-priority transmission claim authorized at Pep Boys. Gearbox set fully covered. Fullsize SUV rental active for 5 days ($50/day)."
+        "High-priority transmission claim authorized at Pep Boys. Gearbox set fully covered. Fullsize SUV rental active for 5 days with Enterprise ($50/day)."
     ]
 }
 df = pd.DataFrame(reporting_data)
@@ -62,7 +63,17 @@ st.sidebar.header("🎛️ Dynamic Data Filters")
 status_filter = st.sidebar.multiselect("Claim Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
 account_filter = st.sidebar.multiselect("Policy Account Profile:", options=df["account_type"].unique(), default=df["account_type"].unique())
 
-filtered_df = df[(df["claim_status"].isin(status_filter)) & (df["account_type"].isin(account_filter))]
+# NEW FILTERS: Shop & Rental Vendor Multi-select matrices added directly into the sidebar
+shop_filter = st.sidebar.multiselect("Filter Partner Shop Network:", options=df["mechanic_shop"].unique(), default=df["mechanic_shop"].unique())
+rental_filter = st.sidebar.multiselect("Filter Rental Car Vendors:", options=df["rental_vendor"].unique(), default=df["rental_vendor"].unique())
+
+# Apply All 4 Multi-layered Sidebar Filter Vectors Simultaneously
+filtered_df = df[
+    (df["claim_status"].isin(status_filter)) & 
+    (df["account_type"].isin(account_filter)) &
+    (df["mechanic_shop"].isin(shop_filter)) &
+    (df["rental_vendor"].isin(rental_filter))
+]
 
 
 # 4. Main Right Canvas Header
@@ -88,7 +99,7 @@ if app_mode == "👥 Customer Overview":
     
     customer_cols = [
         "claim_id", "customer_name", "insurance_provider", "car_model", 
-        "rental_car_allocated", "rental_car_type", "rental_duration_days", 
+        "rental_car_allocated", "rental_vendor", "rental_car_type", "rental_duration_days", 
         "daily_rental_allowance", "claim_status", "suggested_csr_script"
     ]
     st.dataframe(filtered_df[customer_cols], use_container_width=True)
@@ -97,10 +108,13 @@ if app_mode == "👥 Customer Overview":
     st.subheader("📝 Live CRM Case Logger Notes")
     st.markdown("*Select a Case/Customer record from the table above to log a real-time manual update interaction below.*")
     
-    target_id = st.selectbox("Select Target Claim ID to Append:", options=filtered_df["claim_id"].unique())
-    user_notes = st.text_input(label="Type Caller Interaction / Status Verification Update Log Note:")
-    if user_notes:
-        st.success(f"Successfully pinned case log entry update for Claim #{target_id}: '{user_notes}'")
+    if len(filtered_df) > 0:
+        target_id = st.selectbox("Select Target Claim ID to Append:", options=filtered_df["claim_id"].unique())
+        user_notes = st.text_input(label="Type Caller Interaction / Status Verification Update Log Note:")
+        if user_notes:
+            st.success(f"Successfully pinned case log entry update for Claim #{target_id}: '{user_notes}'")
+    else:
+        st.warning("No records match your active sidebar filters to log updates.")
 
 
 # ==========================================
@@ -116,55 +130,56 @@ elif app_mode == "🏪 Shop & Cost Overview":
     st.subheader(f"Gross Fleet Operational Outflow Volume: ${(total_parts + total_labor):,.2f}")
     st.write("")
     
-    s_col1, s_col2 = st.columns(2)
-    with s_col1:
-        cost_mix = pd.DataFrame({
-            "Cost Metric Classification": ["Raw Mechanical Replacement Parts Cost", "Mechanic Technical Labor Billing"], 
-            "Aggregated Outflow": [total_parts, total_labor]
-        })
-        fig_donut = px.pie(cost_mix, values="Aggregated Outflow", names="Cost Metric Classification", hole=0.5,
-                           title="Financial Split: Capital Disbursed to Parts vs. Labor Hours",
-                           color_discrete_sequence=["#9C27B0", "#E040FB"])
-        st.plotly_chart(fig_donut, use_container_width=True)
-        st.caption("**Analytical Cost Explanation:** This donut distribution breaks down macro expenses across the entire active network footprint, showing exactly how physical parts acquisition overhead stacks up directly against standard garage mechanical labor billable hours.")
-        
-    with s_col2:
-        fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
-                         title="Average Machine Cycle Days by Location Partner",
-                         labels={"mechanic_shop": "Repair Network Facility", "days_in_shop": "Days Elapsed in Shop"})
-        st.plotly_chart(fig_bay, use_container_width=True)
-        st.caption("**Analytical Cycle Explanation:** This time-series graph isolates internal repair facility operational velocities (Cycle Time). It charts the total consecutive calendar days vehicles sit physically inside the service bays before processing completion.")
+    if len(filtered_df) > 0:
+        s_col1, s_col2 = st.columns(2)
+        with s_col1:
+            cost_mix = pd.DataFrame({
+                "Cost Metric Classification": ["Raw Mechanical Replacement Parts Cost", "Mechanic Technical Labor Billing"], 
+                "Aggregated Outflow": [total_parts, total_labor]
+            })
+            fig_donut = px.pie(cost_mix, values="Aggregated Outflow", names="Cost Metric Classification", hole=0.5,
+                               title="Financial Split: Capital Disbursed to Parts vs. Labor Hours",
+                               color_discrete_sequence=["#9C27B0", "#E040FB"])
+            st.plotly_chart(fig_donut, use_container_width=True)
+            st.caption("**Analytical Cost Explanation:** This donut distribution breaks down macro expenses across the selected filter footprint, showing exactly how physical parts acquisition overhead stacks up directly against standard garage mechanical labor billable hours.")
+            
+        with s_col2:
+            fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
+                             title="Average Machine Cycle Days by Location Partner",
+                             labels={"mechanic_shop": "Repair Network Facility", "days_in_shop": "Days Elapsed in Shop"})
+            st.plotly_chart(fig_bay, use_container_width=True)
+            st.caption("**Analytical Cycle Explanation:** This time-series graph isolates internal repair facility operational velocities (Cycle Time). It charts the total consecutive calendar days vehicles sit physically inside the service bays before processing completion.")
 
-    # NEW OVERHAUL: Shop Affordability Matrix and Preferred Router Intelligence
-    st.write("---")
-    st.header("📊 Act 2: Network Vendor Affordability & Procurement Router Matrix")
-    st.markdown("##### *Granular financial overview identifying real-time average itemized parts cost per facility to guide optimal policyholder routing.*")
-    
-    # Generate an analytical pivot view mapping Average Parts Costs and Average Labor Costs by Shop
-    shop_insights = filtered_df.groupby("mechanic_shop").agg(
-        avg_parts_spent=("parts_cost", "mean"),
-        avg_labor_spent=("labor_cost", "mean"),
-        avg_days_delayed=("days_in_shop", "mean"),
-        volume_processed=("claim_id", "count")
-    ).reset_index()
-    
-    # Rename columns to make them fully polished for business reports
-    shop_insights.columns = [
-        "Network Shop Facility", "Avg Replacement Parts Bill ($)", 
-        "Avg Facility Labor Invoice ($)", "Avg Cycle Time (Days in Shop)", "Total Claim Volume Logged"
-    ]
-    st.dataframe(shop_insights.style.format({
-        "Avg Replacement Parts Bill ($)": "${:,.2f}",
-        "Avg Facility Labor Invoice ($)": "${:,.2f}",
-        "Avg Cycle Time (Days in Shop)": "{:.1f} Days"
-    }), use_container_width=True)
-    
-    st.write("")
-    st.subheader("💡 AutoGuard Preferred Partner Network Router Guide")
-    st.markdown("Use these automated historical data trends to advise policyholders on the most efficient and cost-effective repair facilities:")
-    st.success("🏆 **Network Cost Leader — Precision Auto:** Historical claim invoices reveal Precision Auto maintains the most competitive baseline for powertrain parts procurement (averaging **$1,000.00** across component classes). Ideal for policyholders looking to protect their remaining policy caps.")
-    st.warning("⚡ **Network Speed Leader — Pep Boys:** While Pep Boys carries higher average hardware parts costs for premium vehicle platforms, they maintain the lowest operational lifecycle friction, completing heavy mechanical gear and electrical installs **40% faster** than the network mean.")
-    st.info("❌ **Compliance Watch — Local Shop B:** Data streams reveal an elevated system denial rate at this facility due to repeated baseline policy exclusion submissions (Routine maintenance wear items). Agents should caution policyholders that out-of-pocket tracking is statistically higher here.")
+        # Shop Affordability Matrix and Preferred Router Intelligence
+        st.write("---")
+        st.header("📊 Act 2: Network Vendor Affordability & Procurement Router Matrix")
+        st.markdown("##### *Granular financial overview identifying real-time average itemized parts cost per facility to guide optimal policyholder routing.*")
+        
+        shop_insights = filtered_df.groupby("mechanic_shop").agg(
+            avg_parts_spent=("parts_cost", "mean"),
+            avg_labor_spent=("labor_cost", "mean"),
+            avg_days_delayed=("days_in_shop", "mean"),
+            volume_processed=("claim_id", "count")
+        ).reset_index()
+        
+        shop_insights.columns = [
+            "Network Shop Facility", "Avg Replacement Parts Bill ($)", 
+            "Avg Facility Labor Invoice ($)", "Avg Cycle Time (Days in Shop)", "Total Claim Volume Logged"
+        ]
+        st.dataframe(shop_insights.style.format({
+            "Avg Replacement Parts Bill ($)": "${:,.2f}",
+            "Avg Facility Labor Invoice ($)": "${:,.2f}",
+            "Avg Cycle Time (Days in Shop)": "{:.1f} Days"
+        }), use_container_width=True)
+        
+        st.write("")
+        st.subheader("💡 AutoGuard Preferred Partner Network Router Guide")
+        st.markdown("Use these automated historical data trends to advise policyholders on the most efficient and cost-effective repair facilities:")
+        st.success("🏆 **Network Cost Leader — Precision Auto:** Historical claim invoices reveal Precision Auto maintains the most competitive baseline for powertrain parts procurement. Ideal for policyholders looking to protect their remaining policy caps.")
+        st.warning("⚡ **Network Speed Leader — Pep Boys:** While Pep Boys carries higher average hardware parts costs for premium vehicle platforms, they maintain the lowest operational lifecycle friction, completing heavy mechanical gear and electrical installs **40% faster** than the network mean.")
+        st.info("❌ **Compliance Watch — Local Shop B:** Data streams reveal an elevated system denial rate at this facility due to repeated baseline policy exclusion submissions (Routine maintenance wear items).")
+    else:
+        st.warning("No active data records match your current sidebar filter combination combinations.")
 
 
 # ==========================================
@@ -183,23 +198,26 @@ elif app_mode == "💰 Sales & Quarter Overview":
         st.metric("Current Backlog Queue Count", value=len(filtered_df[filtered_df["claim_status"] == "Pending"]))
     st.write("")
     
-    sa_col1, sa_col2 = st.columns(2)
-    with sa_col1:
-        fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
-                             title="Gross Booking Volume Distributions",
-                             labels={"reporting_quarter": "Fiscal Period Mark", "repair_cost": "Booking Volume Valuation ($)"},
-                             color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"})
-        st.plotly_chart(fig_sales_q, use_container_width=True)
+    if len(filtered_df) > 0:
+        sa_col1, sa_col2 = st.columns(2)
+        with sa_col1:
+            fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
+                                 title="Gross Booking Volume Distributions",
+                                 labels={"reporting_quarter": "Fiscal Period Mark", "repair_cost": "Booking Volume Valuation ($)"},
+                                 color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"})
+            st.plotly_chart(fig_sales_q, use_container_width=True)
+            
+        with sa_col2:
+            sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
+            fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
+                                         title="Financial Pipeline Velocity Stages",
+                                         labels={"repair_cost": "Total Value in Stage ($)", "funnel_stage": "System Stage"})
+            st.plotly_chart(fig_sales_funnel, use_container_width=True)
         
-    with sa_col2:
-        sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
-        fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
-                                     title="Financial Pipeline Velocity Stages",
-                                     labels={"repair_cost": "Total Value in Stage ($)", "funnel_stage": "System Stage"})
-        st.plotly_chart(fig_sales_funnel, use_container_width=True)
-    
-    st.write("---")
-    st.subheader("🕵️‍♂️ Risk Mitigation Audit Log: System Denial Reasons")
-    st.markdown("Executive context mapping exactly why specific data values were filtered out or denied during systemic pipeline checks:")
-    st.info("💡 **Policy Exclusion Code 401 (Routine Braking Systems):** Component requested was classified as routine friction wear-and-tear pads. Powertrain policies strictly cover mechanical engine and internal gearing component failures, preventing systemic margin bleeding on standard wear items.")
-    st.info("💡 **Policy Exclusion Code 402 (Air Filtration Units):** Filter intake element replacements fall under basic preventative owner maintenance guidelines and do not meet the structural threshold requirements for mechanical claim insurance allocation.")
+        st.write("---")
+        st.subheader("🕵️‍♂️ Risk Mitigation Audit Log: System Denial Reasons")
+        st.markdown("Executive context mapping exactly why specific data values were filtered out or denied during systemic pipeline checks:")
+        st.info("💡 **Policy Exclusion Code 401 (Routine Braking Systems):** Component requested was classified as routine friction wear-and-tear pads. Powertrain policies strictly cover mechanical engine and internal gearing component failures, preventing systemic margin bleeding on standard wear items.")
+        st.info("💡 **Policy Exclusion Code 402 (Air Filtration Units):** Filter intake element replacements fall under basic preventative owner maintenance guidelines and do not meet the structural threshold requirements for mechanical claim insurance allocation.")
+    else:
+        st.warning("No active data records match your current sidebar filter selections.")
