@@ -5,14 +5,6 @@ import plotly.express as px
 # 1. Main Page Canvas Configuration
 st.set_page_config(page_title="AutoGuard Core Enterprise OS", layout="wide")
 
-# Custom CSS injection for a cleaner, high-end layout look
-st.markdown("""
-    <style>
-        .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-        h1, h2, h3 { font-weight: 700 !important; }
-    </style>
-""", unsafe_allowed_html=True)
-
 # 2. Ingest the Robust Data Core
 reporting_data = {
     "claim_id": [101, 102, 103, 104, 105, 106, 107],
@@ -49,7 +41,7 @@ df = pd.DataFrame(reporting_data)
 
 # 3. Sidebar: Left-Hand Navigation Dashboard Core (Gemini / Creative Metrics Style)
 st.sidebar.title("🛡️ AutoGuard OS")
-st.sidebar.markdown("**Network Mesh:** `● Sync Active` ")
+st.sidebar.markdown("**Network Mesh:** `● Sync Active`")
 st.sidebar.write("---")
 
 # Left Sidebar Navigation Toggles
