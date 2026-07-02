@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Main Page Canvas Configuration
 st.set_page_config(page_title="AutoGuard Core Enterprise OS", layout="wide")
 
-# 2. Ingest the Robust Cross-Vehicle Data Core (Expanded with BMW, Audi, Nissan, Toyota)
+# 2. Ingest the Robust Cross-Vehicle Data Core (Complete 10-Row Enterprise Dataset)
 reporting_data = {
     "claim_id": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
     "reporting_quarter": ["Q1 2026", "Q1 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026"],
@@ -23,7 +23,7 @@ reporting_data = {
     "rental_duration_days": [10, 14, 21, 0, 14, 0, 5, 21, 0, 14],
     "daily_rental_allowance": [45.00, 50.00, 75.00, 0.00, 75.00, 0.00, 50.00, 75.00, 0.00, 75.00],
     "parts_cost": [800.00, 500.00, 4200.00, 200.00, 3100.00, 475.00, 3300.00, 2900.00, 350.00, 1800.00],
-    "labor_cost": [400.00, 350.00, 1500.00, 300.00, 1200.00, 500.00, 1500.00, 1100.00, 250.00, 900.00],
+    "labor_cost": [400.00, 350.00, 1000.00, 300.00, 1200.00, 500.00, 1500.00, 1100.00, 250.00, 900.00],
     "repair_cost": [1200.00, 850.00, 5700.00, 500.00, 4300.00, 975.00, 4800.00, 4000.00, 600.00, 2700.00],
     "claim_status": ["Approved", "Pending", "Approved", "Denied", "Pending", "Denied", "Approved", "Approved", "Approved", "Approved"],
     "funnel_stage": ["Closed Authorized", "Engineering Audit", "Closed Authorized", "Denied Static", "Parts Valuation", "Denied Static", "Closed Authorized", "Closed Authorized", "Closed Authorized", "Closed Authorized"],
@@ -43,7 +43,7 @@ reporting_data = {
 }
 df = pd.DataFrame(reporting_data)
 
-# 3. Sidebar Configuration Controls
+# 3. Sidebar Configuration Controls (Account Data Sync Panel Layout)
 st.sidebar.title("👤 Agent Profile: Active Session")
 st.sidebar.markdown("**Logged In Rep:** `CSR_ID_9052` ")
 st.sidebar.markdown("**Network Mesh:** `● Sync Secure`")
@@ -54,7 +54,7 @@ if uploaded_file is not None:
 
 st.sidebar.write("---")
 
-# Left Sidebar Navigation Toggles
+# Left Sidebar Navigation Console
 st.sidebar.subheader("🏁 Navigation Console")
 app_mode = st.sidebar.radio(
     "Select System Panel View:",
@@ -68,7 +68,7 @@ account_filter = st.sidebar.multiselect("Policy Account Profile:", options=df["a
 shop_filter = st.sidebar.multiselect("Filter Partner Shop Network:", options=df["mechanic_shop"].unique(), default=df["mechanic_shop"].unique())
 rental_filter = st.sidebar.multiselect("Filter Rental Car Vendors:", options=df["rental_vendor"].unique(), default=df["rental_vendor"].unique())
 
-# Apply Master Filters
+# Apply Full Dimensional Filtering Logic
 filtered_df = df[
     (df["claim_status"].isin(status_filter)) & 
     (df["account_type"].isin(account_filter)) &
@@ -137,9 +137,12 @@ elif app_mode == "🏪 Shop & Cost Overview":
                 "Cost Metric Classification": ["Raw Mechanical Replacement Parts Cost", "Mechanic Technical Labor Billing"], 
                 "Aggregated Outflow": [total_parts, total_labor]
             })
+            
+            # FIXED BLOCK: Natively displays both the exact Dollar Values and Percentages on the Donut slices
             fig_donut = px.pie(cost_mix, values="Aggregated Outflow", names="Cost Metric Classification", hole=0.5,
                                title="Financial Split: Capital Disbursed to Parts vs. Labor Hours",
                                color_discrete_sequence=["#9C27B0", "#E040FB"])
+            fig_donut.update_traces(textinfo='value+percent', hovertemplate='<b>%{label}</b><br>Total: $%{value:,.2f}<br>Percentage: %{percent}')
             st.plotly_chart(fig_donut, use_container_width=True)
             st.caption("**Analytical Cost Explanation:** This donut distribution breaks down macro expenses across the selected filter footprint, showing exactly how physical parts acquisition overhead stacks up directly against standard garage mechanical labor billable hours.")
             
@@ -172,7 +175,7 @@ elif app_mode == "🏪 Shop & Cost Overview":
             "Avg Cycle Time (Days in Shop)": "{:.1f} Days"
         }), use_container_width=True)
         
-        # NEW TARGETED UPDATE: Dynamic Brand Breakdown Matrix explaining cost/time variances explicitly
+        # Brand Breakdown Matrix explaining cost/time variances explicitly
         st.write("")
         st.subheader("💡 AutoGuard Brand Specific Routing Matrix (BMW & Audi vs. Nissan & Toyota)")
         st.markdown("Vehicle parts costs and bay hold durations vary massively based on manufacturer class. Use this reference lookup to set accurate caller expectations:")
@@ -180,12 +183,12 @@ elif app_mode == "🏪 Shop & Cost Overview":
         col_brand1, col_brand2 = st.columns(2)
         with col_brand1:
             st.info("🇪🇺 **Import Luxury Tier (BMW & Audi):**\n"
-                    "*   **Parts Variance:** High-end engineering components (e.g., Mechatronic transmission blocks or turbo assemblies) command a severe premium, averaging **$1,800 to $4,200** per claim instance.\n"
-                    "*   **Cycle Time Impact:** Expect a baseline shop hold of **16 to 25 Days**. Complex proprietary system diagnostic sequences and overseas supply chain distribution lines add significant downtime friction.")
+                    "* **Parts Variance:** High-end engineering components (e.g., Mechatronic transmission blocks or turbo assemblies) command a severe premium, averaging **$1,800 to $4,200** per claim instance.\n"
+                    "* **Cycle Time Impact:** Expect a baseline shop hold of **16 to 25 Days**. Complex proprietary system diagnostic sequences and overseas supply chain distribution lines add significant downtime friction.")
         with col_brand2:
             st.success("🇯🇵 **Domestic & Import Mainstream Tier (Toyota & Nissan):**\n"
-                    "*   **Parts Variance:** Hardware units (e.g., water pumps, alternators, standard gearboxes) are highly standardized, lowering average parts bills down to **$350 to $800**.\n"
-                    "*   **Cycle Time Impact:** Repair fulfillment drops drastically to **3 to 5 Days** at locations like Pep Boys due to instantaneous local parts distribution coverage.")
+                    "* **Parts Variance:** Hardware units (e.g., water pumps, alternators, standard gearboxes) are highly standardized, lowering average parts bills down to **$350 to $800**.\n"
+                    "* **Cycle Time Impact:** Repair fulfillment drops drastically to **3 to 5 Days** at locations like Pep Boys due to instantaneous local parts distribution coverage.")
             
         st.write("")
         st.markdown("#### 🎯 Smart Shop Optimization Routing Logic")
@@ -212,6 +215,7 @@ elif app_mode == "💰 Sales & Quarter Overview":
     st.write("")
     
     if len(filtered_df) > 0:
+        # Month-by-month historical line trend pinned right at the top
         st.subheader("📈 Month-over-Month Growth Velocity")
         month_order = ["January", "February", "March", "April", "May", "June"]
         monthly_summary = filtered_df.groupby("reporting_month")["repair_cost"].sum().reindex(month_order).reset_index().fillna(0)
@@ -225,11 +229,13 @@ elif app_mode == "💰 Sales & Quarter Overview":
         fig_trend.update_traces(textposition="top center", line_color="#1565C0")
         st.plotly_chart(fig_trend, use_container_width=True)
         
+        # Chronological Performance Variance Analysis context right under line chart
         st.markdown("📋 **Fiscal Month Variance Analysis (Executive Story Context):**")
         st.caption("📉 **Q1 Volumetric Softness (January - February):** Financial liability intake shows lower aggregate values during this opening window. This is a normal seasonal trend driven by low winter vehicle usage, resulting in lower active component failures and extended policy baseline holds.")
         st.caption("📈 **Q2 Hyper-Expansion Acceleration (May - June):** Booking numbers spike sharply as summer temperatures rise. Extreme thermal stress triggers an increase in heavy electrical and high-friction transmission claims across the fleet portfolio.")
         st.write("---")
         
+        # Quarter-over-Quarter and Funnel breakdown charts side-by-side underneath
         sa_col1, sa_col2 = st.columns(2)
         with sa_col1:
             st.subheader("📊 Macro Quarterly Distribution")
