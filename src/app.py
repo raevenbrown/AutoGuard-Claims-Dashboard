@@ -24,7 +24,7 @@ reporting_data = {
     "daily_rental_allowance": [45.00, 50.00, 75.00, 0.00, 75.00, 0.00, 50.00, 75.00, 0.00, 75.00],
     "parts_cost": [800.00, 500.00, 4200.00, 200.00, 3100.00, 475.00, 3300.00, 2900.00, 350.00, 1800.00],
     "labor_cost": [400.00, 350.00, 1000.00, 300.00, 1200.00, 500.00, 1500.00, 1100.00, 250.00, 900.00],
-    "repair_cost": [1200.00, 850.00, 5700.00, 500.00, 4300.00, 975.00, 4800.00, 4000.00, 600.00, 2700.00],
+    "repair_cost": [1200.00, 850.00, 3400.00, 500.00, 2100.00, 975.00, 4800.00, 4000.00, 600.00, 2700.00],
     "claim_status": ["Approved", "Pending", "Approved", "Denied", "Pending", "Denied", "Approved", "Approved", "Approved", "Approved"],
     "funnel_stage": ["Closed Authorized", "Engineering Audit", "Closed Authorized", "Denied Static", "Parts Valuation", "Denied Static", "Closed Authorized", "Closed Authorized", "Closed Authorized", "Closed Authorized"],
     "rental_vendor": ["Hertz", "Enterprise", "Hertz", "None", "Hertz", "None", "Enterprise", "Enterprise", "None", "Hertz"],
@@ -138,11 +138,16 @@ elif app_mode == "🏪 Shop & Cost Overview":
                 "Aggregated Outflow": [total_parts, total_labor]
             })
             
-            # FIXED BLOCK: Natively displays both the exact Dollar Values and Percentages on the Donut slices
             fig_donut = px.pie(cost_mix, values="Aggregated Outflow", names="Cost Metric Classification", hole=0.5,
                                title="Financial Split: Capital Disbursed to Parts vs. Labor Hours",
                                color_discrete_sequence=["#9C27B0", "#E040FB"])
-            fig_donut.update_traces(textinfo='value+percent', hovertemplate='<b>%{label}</b><br>Total: $%{value:,.2f}<br>Percentage: %{percent}')
+            
+            # FIXED: Hardcoded currency text templates to render native dollar amounts ($#,##0.00 format) alongside percentages
+            fig_donut.update_traces(
+                texttemplate='$%{value:,.2f}<br>(%{percent})', 
+                textinfo='value+percent', 
+                hovertemplate='<b>%{label}</b><br>Total: $%{value:,.2f}<br>Percentage: %{percent}'
+            )
             st.plotly_chart(fig_donut, use_container_width=True)
             st.caption("**Analytical Cost Explanation:** This donut distribution breaks down macro expenses across the selected filter footprint, showing exactly how physical parts acquisition overhead stacks up directly against standard garage mechanical labor billable hours.")
             
