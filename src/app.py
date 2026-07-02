@@ -2,13 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Main Page Configuration Setup
+# 1. Main Page Canvas Configuration
 st.set_page_config(page_title="AutoGuard Core Enterprise OS", layout="wide")
-st.title("🛡️ AutoGuard Enterprise Claims Platform")
-st.markdown("### Core Operations Network & Strategic Intelligence Hub")
-st.write("---")
 
-# 2. Ingest the Enhanced Data Core
+# Custom CSS injection for a cleaner, high-end layout look
+st.markdown("""
+    <style>
+        .block-container { padding-top: 2rem; padding-bottom: 2rem; }
+        h1, h2, h3 { font-weight: 700 !important; }
+    </style>
+""", unsafe_allowed_html=True)
+
+# 2. Ingest the Robust Data Core
 reporting_data = {
     "claim_id": [101, 102, 103, 104, 105, 106, 107],
     "reporting_quarter": ["Q1 2026", "Q1 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026"],
@@ -42,52 +47,53 @@ reporting_data = {
 }
 df = pd.DataFrame(reporting_data)
 
-# 3. Sidebar Configuration Controls
-st.sidebar.header("📁 Control Center")
-uploaded_file = st.sidebar.file_uploader("Upload Core Payload (.csv)", type="csv")
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+# 3. Sidebar: Left-Hand Navigation Dashboard Core (Gemini / Creative Metrics Style)
+st.sidebar.title("🛡️ AutoGuard OS")
+st.sidebar.markdown("**Network Mesh:** `● Sync Active` ")
+st.sidebar.write("---")
+
+# Left Sidebar Navigation Toggles
+st.sidebar.subheader("🏁 Main Navigator")
+app_mode = st.sidebar.radio(
+    "Select Interface View:",
+    ["👥 Customer Overview", "🏪 Shop & Cost Overview", "💰 Sales & Quarter Overview"]
+)
 
 st.sidebar.write("---")
-st.sidebar.header("🎛️ Dynamic Target Filters")
-status_filter = st.sidebar.multiselect("Claim Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
-account_filter = st.sidebar.multiselect("Account Classification:", options=df["account_type"].unique(), default=df["account_type"].unique())
+st.sidebar.subheader("🎛️ Dynamic Target Filters")
+status_filter = st.sidebar.multiselect("Claim Status Filter:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
+account_filter = st.sidebar.multiselect("Account Profile Slicer:", options=df["account_type"].unique(), default=df["account_type"].unique())
 
 filtered_df = df[(df["claim_status"].isin(status_filter)) & (df["account_type"].isin(account_filter))]
 
-# 4. Global Executive Scorecard (Pristine layout pinned to top)
-st.subheader("💼 Executive Performance Scorecard")
-m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+# File Ingestion Tooling placed neatly at the bottom of left sidebar controls
+st.sidebar.write("---")
+uploaded_file = st.sidebar.file_uploader("Upload Payload Ingestion Batch (.csv)", type="csv")
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
 
-total_claims = len(filtered_df)
-pending_count = len(filtered_df[filtered_df["claim_status"] == "Pending"])
-denied_count = len(filtered_df[filtered_df["claim_status"] == "Denied"])
-total_payout = filtered_df[filtered_df["claim_status"] == "Approved"]["repair_cost"].sum()
 
-with m_col1:
-    st.metric("Claims Ingested (Total Books)", value=total_claims)
-with m_col2:
-    st.metric("Total Authorized Payouts", value=f"${total_payout:,.2f}")
-with m_col3:
-    st.metric("Pending In-Review Queue", value=pending_count)
-with m_col4:
-    st.metric("System Denial Rate", value=f"{(denied_count / total_claims * 100) if total_claims > 0 else 0:.1f}%")
-
+# 4. Main Right Canvas Header Logic
+st.title("AutoGuard Corporate Reporting Platform")
+st.markdown(f"Currently viewing: **{app_mode}**")
 st.write("---")
 
-# 5. Tabbed Navigation Framework 
-tab_customer, tab_shop, tab_sales = st.tabs([
-    "👥 1. Customer Overview (The Retention Story)", 
-    "🏪 2. Shop & Cost Overview (The Operations Story)", 
-    "💰 3. Sales & Quarter Overview (The Revenue Story)"
-])
 
 # ==========================================
-# TAB 1: CUSTOMER OVERVIEW (RETENTION STORY)
+# VIEW 1: CUSTOMER OVERVIEW (THE RETENTION STORY)
 # ==========================================
-with tab_customer:
-    st.header("👥 Front-Line Customer Experience & Retention Dashboard")
-    st.markdown("*Eliminating customer churn and anxiety through 100% data transparency and real-time support tooling.*")
+if app_mode == "👥 Customer Overview":
+    st.header("👥 Front-Line Customer Experience Registry")
+    st.markdown("##### *Eliminating customer churn and drop-off anxiety through total communication clarity.*")
+    st.write("")
+    
+    # Quick Summary Cards specialized just for Customer Ops
+    c_m1, c_m2 = st.columns(2)
+    with c_m1:
+        st.metric("Total Active Claims Tracked", value=len(filtered_df))
+    with c_m2:
+        st.metric("Active Vehicle Fleet Rentals Out", value=len(filtered_df[filtered_df["rental_car_allocated"] == "Yes"]))
+    st.write("")
     
     customer_cols = [
         "claim_id", "customer_name", "insurance_provider", "car_model", 
@@ -96,52 +102,64 @@ with tab_customer:
     ]
     st.dataframe(filtered_df[customer_cols], use_container_width=True)
 
+
 # ==========================================
-# TAB 2: SHOP & COST OVERVIEW (OPERATIONS STORY)
+# VIEW 2: SHOP & COST OVERVIEW (THE OPERATIONS STORY)
 # ==========================================
-with tab_shop:
-    st.header("🏪 Vendor Network Integrity & Resource Allocation Analysis")
-    st.markdown("*Auditing cycle times and parsing out material vs. labor expenses to prevent margin leakage.*")
+elif app_mode == "🏪 Shop & Cost Overview":
+    st.header("🏪 Repair Network Costs & Integrity Matrix")
+    st.markdown("##### *Monitoring network repair cycle times and component resource distribution splits.*")
+    st.write("")
+    
+    # Metric scorecards tailored for Finance/Ops
+    total_parts = filtered_df["parts_cost"].sum()
+    total_labor = filtered_df["labor_cost"].sum()
+    st.subheader(f"Total Operational Outflow: ${(total_parts + total_labor):,.2f}")
+    st.write("")
     
     s_col1, s_col2 = st.columns(2)
     with s_col1:
-        st.subheader("🍩 Claims Expense Cost Breakdown")
-        total_parts = filtered_df["parts_cost"].sum()
-        total_labor = filtered_df["labor_cost"].sum()
-        cost_mix = pd.DataFrame({"Cost Component": ["Parts Matrix", "Labor Allocation"], "Expense Amount": [total_parts, total_labor]})
-        
-        fig_donut = px.pie(cost_mix, values="Expense Amount", names="Cost Component", hole=0.5,
-                           title="Internal Material vs. Labor Expense Mix",
+        cost_mix = pd.DataFrame({"Component": ["Parts Matrix", "Labor Allocation"], "Expense Amount": [total_parts, total_labor]})
+        fig_donut = px.pie(cost_mix, values="Expense Amount", names="Component", hole=0.5,
+                           title="Material Parts vs. Internal Labor Expense Mix",
                            color_discrete_sequence=["#9C27B0", "#E040FB"])
         st.plotly_chart(fig_donut, use_container_width=True)
         
     with s_col2:
-        st.subheader("⏳ Shop Repair Cycle Times (Days in Bay)")
         fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
-                         title="Average Machine Cycle Days by Partner Location",
+                         title="Average Machine Cycle Days by Location Partner",
                          labels={"mechanic_shop": "Repair Network Facility", "days_in_shop": "Days Elapsed in Shop"})
         st.plotly_chart(fig_bay, use_container_width=True)
 
+
 # ==========================================
-# TAB 3: SALES & QUARTER OVERVIEW (REVENUE STORY)
+# VIEW 3: SALES & QUARTER OVERVIEW (THE REVENUE STORY)
 # ==========================================
-with tab_sales:
-    st.header("💰 Sales Pipeline Conversion & Fiscal Quarter Progression")
-    st.markdown("*Evaluating top-line growth trends, total active books, and processing bottle-necks.*")
+elif app_mode == "💰 Sales & Quarter Overview":
+    st.header("💰 Booking Volume Pipeline & Conversion Funnel")
+    st.markdown("##### *Evaluating processing lifecycle velocities and fiscal performance curves.*")
+    st.write("")
+    
+    # High executive metrics pinned right at the gates of revenue
+    total_payout = filtered_df[filtered_df["claim_status"] == "Approved"]["repair_cost"].sum()
+    sa_m1, sa_m2 = st.columns(2)
+    with sa_m1:
+        st.metric("Total Net Authorized Payouts", value=f"${total_payout:,.2f}")
+    with sa_m2:
+        st.metric("Current Backlog Queue Count", value=len(filtered_df[filtered_df["claim_status"] == "Pending"]))
+    st.write("")
     
     sa_col1, sa_col2 = st.columns(2)
     with sa_col1:
-        st.subheader("📊 Quarter-over-Quarter Comparison")
         fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
                              title="Gross Booking Volume Distributions",
-                             labels={"reporting_quarter": "Fiscal Quarter", "repair_cost": "Booking Volume Valuation ($)"},
+                             labels={"reporting_quarter": "Fiscal Period Mark", "repair_cost": "Booking Volume Valuation ($)"},
                              color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"})
         st.plotly_chart(fig_sales_q, use_container_width=True)
         
     with sa_col2:
-        st.subheader("⏳ Processing Resolution Stage Funnel")
         sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
         fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
-                                     title="Financial Pipeline Velocity Metrics",
-                                     labels={"repair_cost": "Total Value in Pipeline Stage ($)", "funnel_stage": "System Stage"})
+                                     title="Financial Pipeline Velocity Stages",
+                                     labels={"repair_cost": "Total Value in Stage ($)", "funnel_stage": "System Stage"})
         st.plotly_chart(fig_sales_funnel, use_container_width=True)
