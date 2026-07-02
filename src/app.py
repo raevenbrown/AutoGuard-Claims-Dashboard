@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Main Page Canvas Configuration
 st.set_page_config(page_title="AutoGuard Core Enterprise OS", layout="wide")
 
-# 2. Ingest the Robust Data Core
+# 2. Ingest the Detailed Structural Data Core
 reporting_data = {
     "claim_id": [101, 102, 103, 104, 105, 106, 107],
     "reporting_quarter": ["Q1 2026", "Q1 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026"],
@@ -39,35 +39,36 @@ reporting_data = {
 }
 df = pd.DataFrame(reporting_data)
 
-# 3. Sidebar: Left-Hand Navigation Dashboard Core (Gemini / Creative Metrics Style)
-st.sidebar.title("🛡️ AutoGuard OS")
-st.sidebar.markdown("**Network Mesh:** `● Sync Active`")
+# 3. Sidebar Configuration Controls (Moved up and re-styled as an Account Profile Sync)
+st.sidebar.title("👤 Agent Profile: Active Session")
+st.sidebar.markdown("**Logged In Rep:** `CSR_ID_9052` ")
+st.sidebar.markdown("**Network Mesh:** `● Sync Secure`")
+
+# Upload Button Moved High up to act like an Account Sync action
+uploaded_file = st.sidebar.file_uploader("🔄 Sync Profile / Ingest Local CSV Batch Data", type="csv")
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+
 st.sidebar.write("---")
 
 # Left Sidebar Navigation Toggles
-st.sidebar.subheader("🏁 Main Navigator")
+st.sidebar.subheader("🏁 Navigation Console")
 app_mode = st.sidebar.radio(
-    "Select Interface View:",
+    "Select System Panel View:",
     ["👥 Customer Overview", "🏪 Shop & Cost Overview", "💰 Sales & Quarter Overview"]
 )
 
 st.sidebar.write("---")
-st.sidebar.subheader("🎛️ Dynamic Target Filters")
-status_filter = st.sidebar.multiselect("Claim Status Filter:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
-account_filter = st.sidebar.multiselect("Account Profile Slicer:", options=df["account_type"].unique(), default=df["account_type"].unique())
+st.sidebar.subheader("🎛️ Dynamic Data Filters")
+status_filter = st.sidebar.multiselect("Claim Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
+account_filter = st.sidebar.multiselect("Policy Account Profile:", options=df["account_type"].unique(), default=df["account_type"].unique())
 
 filtered_df = df[(df["claim_status"].isin(status_filter)) & (df["account_type"].isin(account_filter))]
 
-# File Ingestion Tooling placed neatly at the bottom of left sidebar controls
-st.sidebar.write("---")
-uploaded_file = st.sidebar.file_uploader("Upload Payload Ingestion Batch (.csv)", type="csv")
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
 
-
-# 4. Main Right Canvas Header Logic
-st.title("AutoGuard Corporate Reporting Platform")
-st.markdown(f"Currently viewing: **{app_mode}**")
+# 4. Main Right Canvas Header
+st.title("🛡️ AutoGuard Corporate Reporting Platform")
+st.markdown(f"Current Dashboard Console Profile: **{app_mode}**")
 st.write("---")
 
 
@@ -79,12 +80,11 @@ if app_mode == "👥 Customer Overview":
     st.markdown("##### *Eliminating customer churn and drop-off anxiety through total communication clarity.*")
     st.write("")
     
-    # Quick Summary Cards specialized just for Customer Ops
     c_m1, c_m2 = st.columns(2)
     with c_m1:
-        st.metric("Total Active Claims Tracked", value=len(filtered_df))
+        st.metric("Total Active Customer Records Evaluated", value=len(filtered_df))
     with c_m2:
-        st.metric("Active Vehicle Fleet Rentals Out", value=len(filtered_df[filtered_df["rental_car_allocated"] == "Yes"]))
+        st.metric("Active Managed Rental Contracts Dispatched", value=len(filtered_df[filtered_df["rental_car_allocated"] == "Yes"]))
     st.write("")
     
     customer_cols = [
@@ -93,6 +93,16 @@ if app_mode == "👥 Customer Overview":
         "daily_rental_allowance", "claim_status", "suggested_csr_script"
     ]
     st.dataframe(filtered_df[customer_cols], use_container_width=True)
+    
+    st.write("---")
+    st.subheader("📝 Live CRM Case Logger Notes")
+    st.markdown("*Select a Case/Customer record from the table above to log a real-time manual update interaction below.*")
+    
+    # NEW REQUEST: Case note logging entry mechanism
+    target_id = st.selectbox("Select Target Claim ID to Append:", options=filtered_df["claim_id"].unique())
+    user_notes = st.text_input(label="Type Caller Interaction / Status Verification Update Log Note:")
+    if user_notes:
+        st.success(f"Successfully pinned case log entry update for Claim #{target_id}: '{user_notes}'")
 
 
 # ==========================================
@@ -103,19 +113,23 @@ elif app_mode == "🏪 Shop & Cost Overview":
     st.markdown("##### *Monitoring network repair cycle times and component resource distribution splits.*")
     st.write("")
     
-    # Metric scorecards tailored for Finance/Ops
     total_parts = filtered_df["parts_cost"].sum()
     total_labor = filtered_df["labor_cost"].sum()
-    st.subheader(f"Total Operational Outflow: ${(total_parts + total_labor):,.2f}")
+    st.subheader(f"Gross Fleet Operational Outflow Volume: ${(total_parts + total_labor):,.2f}")
     st.write("")
     
     s_col1, s_col2 = st.columns(2)
     with s_col1:
-        cost_mix = pd.DataFrame({"Component": ["Parts Matrix", "Labor Allocation"], "Expense Amount": [total_parts, total_labor]})
-        fig_donut = px.pie(cost_mix, values="Expense Amount", names="Component", hole=0.5,
-                           title="Material Parts vs. Internal Labor Expense Mix",
+        # NEW REQUEST: Highly descriptive cost component re-mapping
+        cost_mix = pd.DataFrame({
+            "Cost Metric Classification": ["Raw Mechanical Replacement Parts Cost", "Mechanic Technical Labor Billing"], 
+            "Aggregated Outflow": [total_parts, total_labor]
+        })
+        fig_donut = px.pie(cost_mix, values="Aggregated Outflow", names="Cost Metric Classification", hole=0.5,
+                           title="Financial Split: Capital Disbursed to Parts vs. Labor Hours",
                            color_discrete_sequence=["#9C27B0", "#E040FB"])
         st.plotly_chart(fig_donut, use_container_width=True)
+        st.caption("**Analytical Breakdown Explanation:** This donut distribution splits the total capital layout. It shows how much money was strictly allocated to purchasing mechanical replacement hardware items versus how much was spent paying out the garage technician's hourly labor invoice fees.")
         
     with s_col2:
         fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
@@ -132,7 +146,6 @@ elif app_mode == "💰 Sales & Quarter Overview":
     st.markdown("##### *Evaluating processing lifecycle velocities and fiscal performance curves.*")
     st.write("")
     
-    # High executive metrics pinned right at the gates of revenue
     total_payout = filtered_df[filtered_df["claim_status"] == "Approved"]["repair_cost"].sum()
     sa_m1, sa_m2 = st.columns(2)
     with sa_m1:
@@ -155,3 +168,10 @@ elif app_mode == "💰 Sales & Quarter Overview":
                                      title="Financial Pipeline Velocity Stages",
                                      labels={"repair_cost": "Total Value in Stage ($)", "funnel_stage": "System Stage"})
         st.plotly_chart(fig_sales_funnel, use_container_width=True)
+    
+    # NEW REQUEST: Detailed Policy Denial audit context logic
+    st.write("---")
+    st.subheader("🕵️‍♂️ Risk Mitigation Audit Log: System Denial Reasons")
+    st.markdown("Executive context mapping exactly why specific data values were filtered out or denied during systemic pipeline checks:")
+    st.info("💡 **Policy Exclusion Code 401 (Routine Braking Systems):** Component requested was classified as routine friction wear-and-tear pads. Powertrain policies strictly cover mechanical engine and internal gearing component failures, preventing systemic margin bleeding on standard wear items.")
+    st.info("💡 **Policy Exclusion Code 402 (Air Filtration Units):** Filter intake element replacements fall under basic preventative owner maintenance guidelines and do not meet the structural threshold requirements for mechanical claim insurance allocation.")
