@@ -33,7 +33,7 @@ reporting_data = {
     "suggested_csr_script": [
         "Your electrical claim at Pep Boys was approved. Alternator parts covered. Midsize Sedan active for 10 days ($45/day).",
         "Transmission review pending at Precision Auto. Torque converter on backlog. Fullsize SUV rental approved for 14 days ($50/day).",
-        "Electrical claim authorized at Pep Boys. Wiring harness allocation cleared. No rental required.",
+        "Electrical claim authorized at Pep Boys. Wiring harness allocation cleared. No rental requested.",
         "Claim Denied: Routine maintenance for brake pads is excluded from this powertrain baseline coverage.",
         "Transmission claim pending review at Precision Auto for clutch pack authorization. Compact Sedan active for 7 days ($45/day).",
         "Claim Denied: Air filter swap is categorized as non-covered standard user preventative maintenance.",
@@ -75,7 +75,7 @@ with m_col4:
 
 st.write("---")
 
-# 5. NEW REQUESTED RE-ARCHITECTURE: The Three Core Narrative Tabs
+# 5. Tabbed Navigation Framework 
 tab_customer, tab_shop, tab_sales = st.tabs([
     "👥 1. Customer Overview (The Retention Story)", 
     "🏪 2. Shop & Cost Overview (The Operations Story)", 
@@ -89,7 +89,6 @@ with tab_customer:
     st.header("👥 Front-Line Customer Experience & Retention Dashboard")
     st.markdown("*Eliminating customer churn and anxiety through 100% data transparency and real-time support tooling.*")
     
-    # Custom display registry tracking explicitly what you requested
     customer_cols = [
         "claim_id", "customer_name", "insurance_provider", "car_model", 
         "rental_car_allocated", "rental_car_type", "rental_duration_days", 
@@ -107,7 +106,6 @@ with tab_shop:
     s_col1, s_col2 = st.columns(2)
     with s_col1:
         st.subheader("🍩 Claims Expense Cost Breakdown")
-        # Summing parts and labor separately to match your image 1 requirement
         total_parts = filtered_df["parts_cost"].sum()
         total_labor = filtered_df["labor_cost"].sum()
         cost_mix = pd.DataFrame({"Cost Component": ["Parts Matrix", "Labor Allocation"], "Expense Amount": [total_parts, total_labor]})
@@ -119,7 +117,6 @@ with tab_shop:
         
     with s_col2:
         st.subheader("⏳ Shop Repair Cycle Times (Days in Bay)")
-        # Grouped bar view identifying which mechanics process claims the fastest
         fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
                          title="Average Machine Cycle Days by Partner Location",
                          labels={"mechanic_shop": "Repair Network Facility", "days_in_shop": "Days Elapsed in Shop"})
@@ -135,7 +132,6 @@ with tab_sales:
     sa_col1, sa_col2 = st.columns(2)
     with sa_col1:
         st.subheader("📊 Quarter-over-Quarter Comparison")
-        # Visualizing growth and values across fiscal milestones matching image 2 layout
         fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
                              title="Gross Booking Volume Distributions",
                              labels={"reporting_quarter": "Fiscal Quarter", "repair_cost": "Booking Volume Valuation ($)"},
@@ -144,7 +140,6 @@ with tab_sales:
         
     with sa_col2:
         st.subheader("⏳ Processing Resolution Stage Funnel")
-        # Stage history pipeline funnel mapping exactly what value is close to clearing
         sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
         fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
                                      title="Financial Pipeline Velocity Metrics",
