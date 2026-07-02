@@ -62,12 +62,10 @@ st.sidebar.write("---")
 st.sidebar.header("🎛️ Dynamic Data Filters")
 status_filter = st.sidebar.multiselect("Claim Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
 account_filter = st.sidebar.multiselect("Policy Account Profile:", options=df["account_type"].unique(), default=df["account_type"].unique())
-
-# NEW FILTERS: Shop & Rental Vendor Multi-select matrices added directly into the sidebar
 shop_filter = st.sidebar.multiselect("Filter Partner Shop Network:", options=df["mechanic_shop"].unique(), default=df["mechanic_shop"].unique())
 rental_filter = st.sidebar.multiselect("Filter Rental Car Vendors:", options=df["rental_vendor"].unique(), default=df["rental_vendor"].unique())
 
-# Apply All 4 Multi-layered Sidebar Filter Vectors Simultaneously
+# Apply All Multi-layered Filters
 filtered_df = df[
     (df["claim_status"].isin(status_filter)) & 
     (df["account_type"].isin(account_filter)) &
@@ -168,7 +166,7 @@ elif app_mode == "🏪 Shop & Cost Overview":
         ]
         st.dataframe(shop_insights.style.format({
             "Avg Replacement Parts Bill ($)": "${:,.2f}",
-            "Avg Facility Labor Invoice ($)": "${:,.2f}",
+            "Avg Facility Labor Invoice ($)": "${:RED_CHAR:,.2f}",
             "Avg Cycle Time (Days in Shop)": "{:.1f} Days"
         }), use_container_width=True)
         
@@ -199,15 +197,33 @@ elif app_mode == "💰 Sales & Quarter Overview":
     st.write("")
     
     if len(filtered_df) > 0:
+        # NEW OVERHAUL: Month-by-month historical line trend pinned right at the top
+        st.subheader("📈 Month-over-Month Growth Velocity")
+        month_order = ["January", "February", "March", "April", "May", "June"]
+        monthly_summary = filtered_df.groupby("reporting_month")["repair_cost"].sum().reindex(month_order).reset_index().fillna(0)
+        
+        fig_trend = px.line(
+            monthly_summary, x="reporting_month", y="repair_cost", text="repair_cost",
+            title="Chronological Gross Capital Intake Velocity (Monthly Delta)",
+            labels={"reporting_month": "Fiscal Month", "repair_cost": "Total Booked Claims ($)"},
+            markers=True
+        )
+        fig_trend.update_traces(textposition="top center", line_color="#1565C0")
+        st.plotly_chart(fig_trend, use_container_width=True)
+        st.write("---")
+        
+        # Quarter-over-Quarter and Funnel breakdown charts side-by-side underneath
         sa_col1, sa_col2 = st.columns(2)
         with sa_col1:
+            st.subheader("📊 Macro Quarterly Distribution")
             fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
-                                 title="Gross Booking Volume Distributions",
+                                 title="Gross Booking Volume Distributions by Quarter",
                                  labels={"reporting_quarter": "Fiscal Period Mark", "repair_cost": "Booking Volume Valuation ($)"},
                                  color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"})
             st.plotly_chart(fig_sales_q, use_container_width=True)
             
         with sa_col2:
+            st.subheader("⏳ Lifecycle Stage History Funnel")
             sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
             fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
                                          title="Financial Pipeline Velocity Stages",
