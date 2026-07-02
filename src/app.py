@@ -2,20 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Page Configuration Setup
-st.set_page_config(page_title="AutoGuard Intelligence Platform", layout="wide")
-st.title("🛡️ AutoGuard Corporate Reporting & Narrative Hub")
-st.markdown("### Strategic Analytics Engine: Transforming Underwriting Risk into Operational Capital")
+# 1. Main Page Configuration Setup
+st.set_page_config(page_title="AutoGuard Core Enterprise OS", layout="wide")
+st.title("🛡️ AutoGuard Enterprise Claims Platform")
+st.markdown("### Core Operations Network & Strategic Intelligence Hub")
 st.write("---")
 
-# 2. Ingest the Enhanced Structural Reporting Data
-narrative_data = {
+# 2. Ingest the Enhanced Data Core
+reporting_data = {
     "claim_id": [101, 102, 103, 104, 105, 106, 107],
+    "reporting_quarter": ["Q1 2026", "Q1 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026", "Q2 2026"],
     "reporting_month": ["January", "February", "March", "April", "May", "June", "June"],
-    "submission_date": ["2026-01-15", "2026-02-18", "2026-03-20", "2026-04-22", "2026-05-24", "2026-06-25", "2026-06-26"],
     "customer_name": ["Alice Smith", "Bob Jones", "Charlie Brown", "Diana Prince", "Evan Wright", "Fiona Gallagher", "George Clark"],
-    "age": [28, 45, 62, 31, 51, 22, 39],
-    "gender": ["Female", "Male", "Male", "Female", "Male", "Female", "Male"],
     "account_type": ["Private", "Commercial", "Private", "Private", "Commercial", "Private", "Commercial"],
     "car_model": ["Kia Optima", "Ford F-150", "Kia Optima", "Honda Civic", "Ford F-150", "Honda Civic", "Kia Optima"],
     "part_needed": ["Alternator", "Torque Converter", "Wiring Harness", "Brake Pads", "Clutch Pack", "Air Filter", "Gearbox Set"],
@@ -24,126 +22,131 @@ narrative_data = {
     "insurance_provider": ["State Farm", "Geico", "Progressive", "Allstate", "State Farm", "Geico", "Progressive"],
     "days_in_shop": [14, 11, 9, 7, 5, 4, 3],
     "rental_car_allocated": ["Yes", "Yes", "No", "No", "Yes", "No", "Yes"],
-    "rental_vendor": ["Hertz", "Enterprise", "None", "None", "Hertz", "None", "Enterprise"],
+    "rental_car_type": ["Midsize Sedan", "Fullsize SUV", "None", "None", "Compact Sedan", "None", "Fullsize SUV"],
+    "rental_duration_days": [10, 14, 0, 0, 7, 0, 5],
     "daily_rental_allowance": [45.00, 50.00, 0.00, 0.00, 45.00, 0.00, 50.00],
+    "parts_cost": [800.00, 500.00, 2400.00, 200.00, 1500.00, 475.00, 3300.00],
+    "labor_cost": [400.00, 350.00, 1000.00, 300.00, 600.00, 500.00, 1500.00],
     "repair_cost": [1200.00, 850.00, 3400.00, 500.00, 2100.00, 975.00, 4800.00],
     "claim_status": ["Approved", "Pending", "Approved", "Denied", "Pending", "Denied", "Approved"],
+    "funnel_stage": ["Closed Authorized", "Engineering Audit", "Closed Authorized", "Denied Static", "Parts Valuation", "Denied Static", "Closed Authorized"],
     "suggested_csr_script": [
-        "Your electrical claim at Pep Boys was approved. Alternator parts covered. Hertz rental active ($45/day).",
-        "Transmission review pending at Precision Auto. Torque converter on backlog. Enterprise rental covered ($50/day).",
-        "Electrical claim authorized at Pep Boys. Wiring harness allocation cleared. No rental requested.",
+        "Your electrical claim at Pep Boys was approved. Alternator parts covered. Midsize Sedan active for 10 days ($45/day).",
+        "Transmission review pending at Precision Auto. Torque converter on backlog. Fullsize SUV rental approved for 14 days ($50/day).",
+        "Electrical claim authorized at Pep Boys. Wiring harness allocation cleared. No rental required.",
         "Claim Denied: Routine maintenance for brake pads is excluded from this powertrain baseline coverage.",
-        "Transmission claim pending review at Precision Auto for clutch pack authorization. Hertz rental active ($45/day).",
+        "Transmission claim pending review at Precision Auto for clutch pack authorization. Compact Sedan active for 7 days ($45/day).",
         "Claim Denied: Air filter swap is categorized as non-covered standard user preventative maintenance.",
-        "High-priority transmission claim authorized at Pep Boys. Gearbox set fully covered. Enterprise rental active ($50/day)."
+        "High-priority transmission claim authorized at Pep Boys. Gearbox set fully covered. Fullsize SUV rental active for 5 days ($50/day)."
     ]
 }
-df = pd.DataFrame(narrative_data)
+df = pd.DataFrame(reporting_data)
 
-# 3. Sidebar Filter Operations (The Strategic Control Panel)
-st.sidebar.header("📁 Control Panel")
-uploaded_file = st.sidebar.file_uploader("Upload Claims Matrix (.csv)", type="csv")
+# 3. Sidebar Configuration Controls
+st.sidebar.header("📁 Control Center")
+uploaded_file = st.sidebar.file_uploader("Upload Core Payload (.csv)", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
 st.sidebar.write("---")
-st.sidebar.header("🎯 Master Cohort Slicers")
+st.sidebar.header("🎛️ Dynamic Target Filters")
+status_filter = st.sidebar.multiselect("Claim Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
+account_filter = st.sidebar.multiselect("Account Classification:", options=df["account_type"].unique(), default=df["account_type"].unique())
 
-status_filter = st.sidebar.multiselect("Claim Lifecycle Status:", options=df["claim_status"].unique(), default=df["claim_status"].unique())
-account_filter = st.sidebar.multiselect("Policy Account Profile:", options=df["account_type"].unique(), default=df["account_type"].unique())
-shop_filter = st.sidebar.multiselect("Mechanic Shop Network:", options=df["mechanic_shop"].unique(), default=df["mechanic_shop"].unique())
+filtered_df = df[(df["claim_status"].isin(status_filter)) & (df["account_type"].isin(account_filter))]
 
-# Apply Master Slicers
-filtered_df = df[
-    (df["claim_status"].isin(status_filter)) & 
-    (df["account_type"].isin(account_filter)) &
-    (df["mechanic_shop"].isin(shop_filter))
-]
+# 4. Global Executive Scorecard (Pristine layout pinned to top)
+st.subheader("💼 Executive Performance Scorecard")
+m_col1, m_col2, m_col3, m_col4 = st.columns(4)
 
-# 4. ACT 1: THE EXECUTIVE FINANCIAL OVERVIEW (Top Strategic Summary)
-st.header("📊 Act 1: Executive Capital Allocation & Financial Health")
-col1, col2, col3, col4 = st.columns(4)
+total_claims = len(filtered_df)
+pending_count = len(filtered_df[filtered_df["claim_status"] == "Pending"])
+denied_count = len(filtered_df[filtered_df["claim_status"] == "Denied"])
+total_payout = filtered_df[filtered_df["claim_status"] == "Approved"]["repair_cost"].sum()
 
-total_exposure = filtered_df["repair_cost"].sum()
-pending_liquidity = filtered_df[filtered_df["claim_status"] == "Pending"]["repair_cost"].sum()
-avg_cycle_time = filtered_df["days_in_shop"].mean() if len(filtered_df) > 0 else 0
-total_active_rentals = len(filtered_df[filtered_df["rental_car_allocated"] == "Yes"])
-
-with col1:
-    st.metric(label="Gross Financial Exposure", value=f"${total_exposure:,.2f}", delta="Underwriting Target")
-with col2:
-    st.metric(label="Pending Liquidity Reserve (Risk)", value=f"${pending_liquidity:,.2f}", delta="Requires Verification", delta_color="inverse")
-with col3:
-    st.metric(label="Mean Cycle Time (Friction)", value=f"{avg_cycle_time:.1f} Days", delta="Target <= 7 Days")
-with col4:
-    st.metric(label="Active Rental Fleet Leases", value=f"{total_active_rentals} Contracts", delta="Vendor Exposure")
+with m_col1:
+    st.metric("Claims Ingested (Total Books)", value=total_claims)
+with m_col2:
+    st.metric("Total Authorized Payouts", value=f"${total_payout:,.2f}")
+with m_col3:
+    st.metric("Pending In-Review Queue", value=pending_count)
+with m_col4:
+    st.metric("System Denial Rate", value=f"{(denied_count / total_claims * 100) if total_claims > 0 else 0:.1f}%")
 
 st.write("---")
 
-# 5. ACT 2: CHRONOLOGICAL FINANCIAL LOSS RATIOS (Historical Outflow Trend)
-st.subheader("📉 Chronicle Timeline: Liabilities over Time")
-month_order = ["January", "February", "March", "April", "May", "June"]
-monthly_summary = filtered_df.groupby(["reporting_month", "claim_status"])["repair_cost"].sum().reset_index()
+# 5. NEW REQUESTED RE-ARCHITECTURE: The Three Core Narrative Tabs
+tab_customer, tab_shop, tab_sales = st.tabs([
+    "👥 1. Customer Overview (The Retention Story)", 
+    "🏪 2. Shop & Cost Overview (The Operations Story)", 
+    "💰 3. Sales & Quarter Overview (The Revenue Story)"
+])
 
-fig_trend = px.area(
-    monthly_summary, 
-    x="reporting_month", 
-    y="repair_cost", 
-    color="claim_status",
-    title="Chronological Outflow Trends: Net Liquidity Allocations",
-    labels={"reporting_month": "Fiscal Month", "repair_cost": "Aggregated Outflow ($)"},
-    category_orders={"reporting_month": month_order},
-    color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"}
-)
-st.plotly_chart(fig_trend, use_container_width=True)
-
-st.write("---")
-
-# 6. ACT 3: SEGMENTATION & MARKET UNDERWRITING TRAPS (The Refactored Multi-Department Matrix)
-st.header("🎯 Act 2: Multi-Department Segment Analysis")
-st.markdown("#### Discovering Profitability Bottlenecks Across Product, Marketing, and Operations Layers")
-
-chart_col1, chart_col2 = st.columns(2)
-
-with chart_col1:
-    st.subheader("🏎️ Underwriting Matrix: Vehicle Loss Volatility")
-    st.markdown("*Used by **Product Marketing** to instantly flag vehicle lines leaking capital due to structural/component trends.*")
+# ==========================================
+# TAB 1: CUSTOMER OVERVIEW (RETENTION STORY)
+# ==========================================
+with tab_customer:
+    st.header("👥 Front-Line Customer Experience & Retention Dashboard")
+    st.markdown("*Eliminating customer churn and anxiety through 100% data transparency and real-time support tooling.*")
     
-    fig_car_bar = px.bar(
-        filtered_df,
-        x="repair_cost",
-        y="car_model",
-        color="claim_type",
-        barmode="group",
-        title="Gross Claims Exposure Across Vehicular Profiles",
-        labels={"repair_cost": "Total Financial Leakage ($)", "car_model": "Vehicle Classification"}
-    )
-    st.plotly_chart(fig_car_bar, use_container_width=True)
+    # Custom display registry tracking explicitly what you requested
+    customer_cols = [
+        "claim_id", "customer_name", "insurance_provider", "car_model", 
+        "rental_car_allocated", "rental_car_type", "rental_duration_days", 
+        "daily_rental_allowance", "claim_status", "suggested_csr_script"
+    ]
+    st.dataframe(filtered_df[customer_cols], use_container_width=True)
 
-with chart_col2:
-    st.subheader("🏪 Vendor Network Integrity Portal")
-    st.markdown("*Used by **Operations & Partnership Teams** to audit mechanic behavior and vendor compliance guidelines.*")
+# ==========================================
+# TAB 2: SHOP & COST OVERVIEW (OPERATIONS STORY)
+# ==========================================
+with tab_shop:
+    st.header("🏪 Vendor Network Integrity & Resource Allocation Analysis")
+    st.markdown("*Auditing cycle times and parsing out material vs. labor expenses to prevent margin leakage.*")
     
-    fig_vendor_stack = px.bar(
-        filtered_df,
-        x="mechanic_shop",
-        y="repair_cost",
-        color="claim_status",
-        title="Network Vendor Approval/Denial Ratios & Financial Footprint",
-        labels={"mechanic_shop": "Repair Network Facility Location", "repair_cost": "Total Billed Assets ($)"},
-        color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"}
-    )
-    st.plotly_chart(fig_vendor_stack, use_container_width=True)
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        st.subheader("🍩 Claims Expense Cost Breakdown")
+        # Summing parts and labor separately to match your image 1 requirement
+        total_parts = filtered_df["parts_cost"].sum()
+        total_labor = filtered_df["labor_cost"].sum()
+        cost_mix = pd.DataFrame({"Cost Component": ["Parts Matrix", "Labor Allocation"], "Expense Amount": [total_parts, total_labor]})
+        
+        fig_donut = px.pie(cost_mix, values="Expense Amount", names="Cost Component", hole=0.5,
+                           title="Internal Material vs. Labor Expense Mix",
+                           color_discrete_sequence=["#9C27B0", "#E040FB"])
+        st.plotly_chart(fig_donut, use_container_width=True)
+        
+    with s_col2:
+        st.subheader("⏳ Shop Repair Cycle Times (Days in Bay)")
+        # Grouped bar view identifying which mechanics process claims the fastest
+        fig_bay = px.bar(filtered_df, x="mechanic_shop", y="days_in_shop", color="car_model", barmode="group",
+                         title="Average Machine Cycle Days by Partner Location",
+                         labels={"mechanic_shop": "Repair Network Facility", "days_in_shop": "Days Elapsed in Shop"})
+        st.plotly_chart(fig_bay, use_container_width=True)
 
-st.write("---")
-
-# 7. ACT 4: TRANSLATING COMPLIANCE INTO TRUST (Customer Support Hub)
-st.header("👥 Act 3: Front-Line Policy Communication Portal")
-st.markdown("#### Instantly Empowering Front-Line Reps to Explain Complex Backend Database Logic Clear as Day")
-
-display_cols = [
-    "claim_id", "submission_date", "customer_name", "insurance_provider", 
-    "car_model", "part_needed", "days_in_shop", "rental_car_allocated", 
-    "rental_vendor", "daily_rental_allowance", "repair_cost", "claim_status", "suggested_csr_script"
-]
-st.dataframe(filtered_df[display_cols], use_container_width=True)
+# ==========================================
+# TAB 3: SALES & QUARTER OVERVIEW (REVENUE STORY)
+# ==========================================
+with tab_sales:
+    st.header("💰 Sales Pipeline Conversion & Fiscal Quarter Progression")
+    st.markdown("*Evaluating top-line growth trends, total active books, and processing bottle-necks.*")
+    
+    sa_col1, sa_col2 = st.columns(2)
+    with sa_col1:
+        st.subheader("📊 Quarter-over-Quarter Comparison")
+        # Visualizing growth and values across fiscal milestones matching image 2 layout
+        fig_sales_q = px.bar(filtered_df, x="reporting_quarter", y="repair_cost", color="claim_status",
+                             title="Gross Booking Volume Distributions",
+                             labels={"reporting_quarter": "Fiscal Quarter", "repair_cost": "Booking Volume Valuation ($)"},
+                             color_discrete_map={"Approved": "#2E7D32", "Pending": "#1565C0", "Denied": "#C62828"})
+        st.plotly_chart(fig_sales_q, use_container_width=True)
+        
+    with sa_col2:
+        st.subheader("⏳ Processing Resolution Stage Funnel")
+        # Stage history pipeline funnel mapping exactly what value is close to clearing
+        sales_funnel = filtered_df.groupby("funnel_stage")["repair_cost"].sum().reset_index().sort_values(by="repair_cost", ascending=False)
+        fig_sales_funnel = px.funnel(sales_funnel, x="repair_cost", y="funnel_stage",
+                                     title="Financial Pipeline Velocity Metrics",
+                                     labels={"repair_cost": "Total Value in Pipeline Stage ($)", "funnel_stage": "System Stage"})
+        st.plotly_chart(fig_sales_funnel, use_container_width=True)
